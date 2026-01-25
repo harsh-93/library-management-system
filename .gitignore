@@ -1,0 +1,40 @@
+# Eclipse IDE files
+.metadata
+.classpath
+.project
+.settings/
+
+# STS (Spring Tool Suite) specific files
+.sts4-cache/
+
+# Gradle build files and directories
+.gradle/
+build/
+*.lock
+
+# Maven build files and directories
+target/
+
+# Log files
+*.log
+logs/
+
+# Eclipse generated files
+bin/
+gen/
+tmp/
+# Eclipse code style files
+*.prefs
+
+# Project specific files that shouldn't be in VCS
+# (e.g., local configuration or secrets)
+# application-local.properties
+# .env
+
+# Operating System files
+.DS_Store # Mac
+Thumbs.db # Windows
+
+# Intellij IDE files (in case you also use Intellij)
+.idea/
+*.iml

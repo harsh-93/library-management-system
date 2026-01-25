@@ -11,7 +11,7 @@
 	<groupId>com.health.spry</groupId>
 	<artifactId>service-discovery</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>demo</name>
+	<name>service-discovery</name>
 	<description>Service Discovery Project for all Microservices</description>
 	<url/>
 	<licenses>

@@ -20,9 +20,10 @@ public class BookSpecification {
 
             // Filter by author
             if (author != null && !author.isEmpty()) {
+            	String authorSearchPattern = "%" + author.toLowerCase() + "%";
                 predicates.add(criteriaBuilder.like(
                         criteriaBuilder.lower(root.get("author")),
-                        "%" + author.toLowerCase() + "%"
+                        authorSearchPattern
                 ));
             }
 

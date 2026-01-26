@@ -7,30 +7,31 @@ spring:
   cloud:
     gateway:
       discovery:
+        default-filters:
+          - name: CircuitBreaker
+            args:
+              name: defaultCircuitBreaker
+              fallbackUri: forward:/fallback/default
+        httpclient:
+          connect-timeout: 5000
+          response-timeout: 5s
         locator:
           enabled: true
           lower-case-service-id: true
       routes:
         - id: signup-service
-          uri: lb://signup-service
+          uri: lb://SIGNUP-SERVICE
           predicates:
             - Path=/api/signup/**
-          filters:
-            - StripPrefix=1
-
         - id: login-service
-          uri: lb://login-service
+          uri: lb://LOGIN-SERVICE
           predicates:
             - Path=/api/auth/**
-          filters:
-            - StripPrefix=1
-
         - id: book-service
-          uri: lb://book-service
+          uri: lb://BOOK-SERVICE
           predicates:
             - Path=/api/books/**
-          filters:
-            - StripPrefix=1
+
 
 eureka:
   client:
@@ -40,3 +41,47 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      bookServiceCircuitBreaker:
+        registerHealthIndicator: true
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+        recordExceptions:
+          - org.springframework.cloud.gateway.support.NotFoundException
+          - java.net.ConnectException
+          - java.io.IOException
+      loginServiceCircuitBreaker:
+        registerHealthIndicator: true
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+        recordExceptions:
+          - org.springframework.cloud.gateway.support.NotFoundException
+          - java.net.ConnectException
+          - java.io.IOException
+      defaultCircuitBreaker:
+        registerHealthIndicator: true
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        failureRateThreshold: 50
+
+  timelimiter:
+    instances:
+      bookServiceCircuitBreaker:
+        timeoutDuration: 5s
+      loginServiceCircuitBreaker:
+        timeoutDuration: 5s
+      defaultCircuitBreaker:
+        timeoutDuration: 5s

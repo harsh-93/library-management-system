@@ -1,0 +1,433 @@
+{
+	"info": {
+		"_postman_id": "ad217db6-bddd-4e4f-8d83-25d81dc7ebe7",
+		"name": "Library Management System API",
+		"description": "Complete API collection for Library Management System microservices",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "313784"
+	},
+	"item": [
+		{
+			"name": "Signup Service",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"lms_new_user_final\",\n  \"email\": \"new_user_final@spry.com\",\n  \"password\": \"ProtectedPass123!#\",\n  \"first-name\": \"Mohit\",\n  \"last-name\": \"Yadav\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/signup/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"signup",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check - Signup",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/signup/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"signup",
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Login Service",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"lms_new_user_final\",\n  \"password\": \"ProtectedPass123!#\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/auth/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check - Login",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/auth/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Book Service",
+			"item": [
+				{
+					"name": "Create Book",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjcsInN1YiI6Imxtc19uZXdfdXNlciIsImlhdCI6MTc2OTQyOTQwNiwiZXhwIjoxNzY5NTE1ODA2fQ.D1ajGt84-ctbQ5M35YXjCf_D_6f4GcDN8XiYhOSFRqk",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"new Book - Romeo4\",\n  \"author\": \"Mohit Kumar Yadav KVS\",\n  \"isbn\": \"isban_675\",\n  \"published-year\": 2011,\n  \"availability-status\": \"AVAILABLE\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/books",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Books (Paginated and multiple Params)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjgsInN1YiI6Imxtc19uZXdfdXNlcl9maW5hbCIsImlhdCI6MTc2OTQ1OTU4MCwiZXhwIjoxNzY5NTQ1OTgwfQ.YBe4WPnmb4oG1dzxRFcGv9qVyEUhoTikNhrfAK8zZwM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/books?page=0&size=2&sortBy=publishedYear&author=harsh&publishedYear=2022",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"books"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "2"
+								},
+								{
+									"key": "sortBy",
+									"value": "publishedYear",
+									"description": "This can take any of - id, title, author, publishedYear"
+								},
+								{
+									"key": "author",
+									"value": "harsh",
+									"description": "This supports partial search too. This is optional field\n"
+								},
+								{
+									"key": "publishedYear",
+									"value": "2022",
+									"description": "This is optional field too "
+								},
+								{
+									"key": null,
+									"value": null,
+									"disabled": true
+								}
+							]
+						},
+						"description": "This api helps get the paginated repsonse for querying for a book by optinal params - Author and Published year. There is also an option to sort by id, title, author, publishedYear.\n\nAll pagination fileds are mandatory"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Book by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/books/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"books",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Book (Update may trigger notification)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjgsInN1YiI6Imxtc19uZXdfdXNlcl9maW5hbCIsImlhdCI6MTc2OTQ1OTU4MCwiZXhwIjoxNzY5NTQ1OTgwfQ.YBe4WPnmb4oG1dzxRFcGv9qVyEUhoTikNhrfAK8zZwM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"testing notification case\",\n    \"author\": \"Harsh sehkhawat new author retry\",\n    \"isbn\": \"1234ee7nj\",\n    \"published-year\": 2022,\n    \"availability-status\": \"AVAILABLE\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/books/6",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"books",
+								"6"
+							]
+						},
+						"description": "This api will trigger kafka notification event for a user who had this book marked as wishlist item due to its unavailibility.This happens the moment this book becomes available"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Books",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjcsInN1YiI6Imxtc19uZXdfdXNlciIsImlhdCI6MTc2OTQyOTQwNiwiZXhwIjoxNzY5NTE1ODA2fQ.D1ajGt84-ctbQ5M35YXjCf_D_6f4GcDN8XiYhOSFRqk",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/books/search?query=agile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"books",
+								"search"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "agile",
+									"description": "The search value can be anything  from the book title or book's autohr. And this is a partial search"
+								}
+							]
+						},
+						"description": "This api helps with partials text search on book title or author . Behind the scene it will search for the book on both title and author to see if this text is partially present in any or both"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Book (Soft Delete)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/books/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"books",
+								"1"
+							]
+						},
+						"description": "This api marks book as deleted in DB, but data is till present . We wont show books which are marked DELETED"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Book to Wishlist",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjcsInN1YiI6Imxtc19uZXdfdXNlciIsImlhdCI6MTc2OTQyOTQwNiwiZXhwIjoxNzY5NTE1ODA2fQ.D1ajGt84-ctbQ5M35YXjCf_D_6f4GcDN8XiYhOSFRqk",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": 8,\n  \"bookId\": 6\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/books/wishlist",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"books",
+								"wishlist"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check - Books",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/books/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"books",
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Service Discovery",
+			"item": [
+				{
+					"name": "Eureka Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8761",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8761"
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

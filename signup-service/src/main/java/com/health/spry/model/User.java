@@ -23,7 +23,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "users",indexes = {
+@Table(name = "users",indexes = { // These indexes optimises the query 
 		@Index(name = "idx_user_username", columnList = "username"),
 		@Index(name = "idx_user_email", columnList = "email")
 }, uniqueConstraints = {

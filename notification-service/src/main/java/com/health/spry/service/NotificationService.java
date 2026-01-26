@@ -29,12 +29,12 @@ public class NotificationService {
 
         // Simulating some processing time
         try {
-            Thread.sleep(100);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
         log.info("Notification successfully sent to user: {}", event.getUserId());
-        throw new RuntimeException("Simulated failure for retry");
+        //throw new RuntimeException("Simulated failure for retry"); //This can be used to simulate the retryable DLQ 
     }
 }

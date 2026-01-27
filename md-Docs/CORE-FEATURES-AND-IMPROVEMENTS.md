@@ -224,8 +224,21 @@ This document outlines the **core features** that make this application producti
 
 ---
 
-## 🚀 Scope of Improvements
 
+
+## 🚀 Scope of Improvements
+### **1. Add unit and Integration tests**
+
+**Current State:**
+- There are no unit and IT for any of the services
+- Potential chances of missig failures 
+- error prone
+
+**Benefits if we add tests:**
+- Fail fast and fiL SAFE MS
+
+
+---
 
 
 ### **2. User Entity Duplication Between Services**

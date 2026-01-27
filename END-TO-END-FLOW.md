@@ -14,7 +14,7 @@ This guide provides a complete walkthrough of the Library Management System, fro
 4. [Complete API Workflow Script](#complete-api-workflow-script)
 5. [Data Flow Diagrams](#data-flow-diagrams)
 6. [Testing Scenarios](#testing-scenarios)
-7. [Troubleshooting](#troubleshooting)
+7. [CORE FEATURES AND IMPROVEMENTS](#core-features-and-improvements)
 
 ---
 
@@ -82,9 +82,9 @@ Before starting, ensure you have:
 
 ### Running the Application:
 
-**To Start the appliction See [START-LMS.md](START-LMS.md)**
+**To Start the appliction See [START-LMS.md](md-Docs/START-LMS.md)**
 
-To SEE SWagger GUIDES and URLS of the appliction See [SWAGGER-GUIDE.md](SWAGGER-GUIDE.md) and [SWAGGER-URLs.md](SWAGGER-URLs.md)
+To SEE SWagger GUIDES and URLS of the appliction See [SWAGGER-GUIDE.md](md-Docs/SWAGGER-GUIDE.md) and [SWAGGER-URLs.md](md-Docs/SWAGGER-URLs.md)
 
 You can find the Postman collection here -> [lms-API.postman_collection.json](lms-API.postman_collection.json)
 
@@ -124,18 +124,7 @@ curl -X POST http://localhost:8080/api/signup/register \
   }'
 ```
 
-**What Happens Internally:**
 
-1. Request → **API Gateway** (port 8080)
-2. Gateway routes to → **Signup Service** (port 8081)
-   - Path: `/api/signup/register` → forwards to `/api/signup/register`
-3. Signup Service validates:
-   - ✅ Username is unique
-   - ✅ Email format is valid
-   - ✅ Password meets requirements
-4. Password hashed using **BCrypt**
-5. User saved to `library_signup_db.users` table
-6. Returns success response
 
 **Expected Response:**
 ```json
@@ -180,18 +169,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 
 **What Happens Internally:**
 
-1. Request → **API Gateway** → **Login Service** (port 8082)
-2. Login Service:
-   - Queries `library_signup_db.users` for username
-   - **Optimized:** Only 1 query (CustomUserDetails pattern)
-   - Validates password using BCrypt
-   - Generates JWT token:
-     ```
-     Header: {"alg": "HS256", "typ": "JWT"}
-     Payload: {"userId": 1, "username": "john_doe", "iat": ..., "exp": ...}
-     Signature: HMACSHA256(header + payload, secret)
-     ```
-   - Token expires in 24 hours
+
 3. Returns JWT token and user details
 
 **Expected Response:**
@@ -206,15 +184,9 @@ curl -X POST http://localhost:8080/api/auth/login \
 }
 ```
 
-**Data Flow:**
-```
-Client → API Gateway → Login Service → MySQL (SELECT user) 
-                                     → Validate Password
-                                     → Generate JWT
-                                     → ✅ Return Token
-```
 
-**⚠️ IMPORTANT:** Save this token! You'll need it for all subsequent requests.
+
+**IMPORTANT:** Save this token! You'll need it for all subsequent requests.
 
 **Store the token:**
 ```bash
@@ -244,24 +216,7 @@ curl -X POST http://localhost:8080/api/books \
   }'
 ```
 
-**What Happens Internally:**
 
-1. Request → **API Gateway** → **Book Service** (port 8083)
-2. **JWT Authentication Filter** (runs before controller):
-   - Extracts token from `Authorization: Bearer <token>` header
-   - Validates token signature using secret key
-   - Checks token expiration
-   - Extracts username from token
-   - Sets Spring Security context
-   - ✅ Proceeds to controller if valid
-   - ❌ Returns 401 if invalid/expired
-3. Book Controller → Book Service:
-   - Checks ISBN uniqueness: `SELECT COUNT(*) FROM books WHERE isbn = ? AND deleted = false`
-   - ❌ Returns 409 Conflict if ISBN exists
-   - ✅ Creates new book if unique
-4. Saves to `library_book_db.books` table
-5. Sets timestamps: `createdAt` and `updatedAt`
-6. Returns created book
 
 **Expected Response:**
 ```json
@@ -278,20 +233,7 @@ curl -X POST http://localhost:8080/api/books \
 }
 ```
 
-**Data Flow:**
-```
-Client → API Gateway → Book Service → JWT Validation ✅
-                                   → Check ISBN Uniqueness
-                                   → MySQL (INSERT book)
-                                   → ✅ Book Created
-```
 
-**Security:**
-- ✅ JWT token required
-- ✅ Token validated before processing
-- ✅ Only authenticated users can create books
-
----
 
 #### **Step 4️⃣: Get All Books (with Pagination & Filtering)**
 
@@ -326,28 +268,6 @@ curl -X GET "http://localhost:8080/api/books?author=Martin&availabilityStatus=AV
 curl -X GET "http://localhost:8080/api/books?sort=title,asc" \
   -H "Authorization: Bearer $TOKEN"
 ```
-
-**What Happens Internally:**
-
-1. Request → **API Gateway** → **Book Service**
-2. JWT validated
-3. **JPA Specifications** build dynamic query:
-   ```java
-   Specification<Book> spec = Specification.where(null);
-   if (author != null) spec = spec.and(authorContains(author));
-   if (status != null) spec = spec.and(statusEquals(status));
-   spec = spec.and(notDeleted());  // Always exclude soft-deleted books
-   ```
-4. Query executed:
-   ```sql
-   SELECT * FROM books 
-   WHERE deleted = false 
-     AND author LIKE '%Martin%' 
-     AND availability_status = 'AVAILABLE'
-   ORDER BY title ASC
-   LIMIT 10 OFFSET 0;
-   ```
-5. Returns paginated results
 
 **Expected Response:**
 ```json
@@ -405,40 +325,10 @@ curl -X POST http://localhost:8080/api/books/wishlist \
   }'
 ```
 
-**What Happens Internally:**
-
-1. Request → **API Gateway** → **Book Service**
-2. JWT validated
-3. **Security Feature:**
-   - Username extracted from JWT token (e.g., "john_doe")
-   - Query: `SELECT * FROM users WHERE username = 'john_doe'`
-   - Get userId from database (e.g., userId = 1)
-   - ✅ **Important:** userId NOT accepted from request body!
-   - ❌ Prevents users from adding to other users' wishlists
-4. Validates book exists:
-   - Query: `SELECT * FROM books WHERE id = 1 AND deleted = false`
-   - ❌ Returns 404 if not found
-5. Checks if already in wishlist:
-   - Query: `SELECT COUNT(*) FROM wishlists WHERE user_id = 1 AND book_id = 1`
-   - Silently returns if already exists (idempotent)
-6. Inserts into wishlist:
-   - Query: `INSERT INTO wishlists (user_id, book_id, created_at) VALUES (1, 1, NOW())`
 
 **Expected Response:**
 ```json
 HTTP 200 OK
-```
-
-**Data Flow:**
-```
-Client → API Gateway → Book Service → JWT Validation ✅
-                                   → Extract Username from JWT
-                                   → MySQL (SELECT user by username)
-                                   → Get User ID (Secure! 🔒)
-                                   → Validate Book Exists
-                                   → Check if Already in Wishlist
-                                   → MySQL (INSERT into wishlists)
-                                   → ✅ Wishlist Entry Created
 ```
 
 **Security Highlight:**
@@ -980,3 +870,8 @@ Attempt 4: book-notification-topic-retry-2 → FAIL
    - Test retry mechanism
 
 ---
+
+---
+
+## CORE FEATURES AND IMPROVEMENTS
+See -> [core-features-and-improvement-scope.md](md-Docs/CORE-FEATURES-AND-IMPROVEMENTS.md)

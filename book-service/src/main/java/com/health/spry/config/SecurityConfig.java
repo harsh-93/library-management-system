@@ -33,7 +33,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints - no authentication required
                 .requestMatchers(
-                    "/books/health",
+                    "/api/books/health",
                     "/actuator/**",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",

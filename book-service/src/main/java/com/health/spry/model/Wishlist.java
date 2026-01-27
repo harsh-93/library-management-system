@@ -1,3 +1,4 @@
+
 package com.health.spry.model;
 
 import jakarta.persistence.*;
@@ -11,8 +12,10 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "wishlists", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"user_id", "book_id"})
+@Table(name = "wishlists",indexes = { // These indexes optimises the query
+		@Index(name = "idx_userid_bookid", columnList = "user_id,book_id")
+}, uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"user_id", "book_id"})  
 })
 @Data
 @NoArgsConstructor

@@ -1,0 +1,61 @@
+server:
+  port: ${SERVER_PORT:8084}
+
+spring:
+  application:
+    name: ${SPRING_APPLICATION_NAME:notification-service}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:notification-group}
+      auto-offset-reset: ${KAFKA_AUTO_OFFSET_RESET:earliest}
+      enable-auto-commit: false  # Disable auto-commit (Spring manages commits)
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      max-poll-records: ${KAFKA_MAX_POLL_RECORDS:10}
+      properties:
+        # JSON deserializer settings
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: com.health.spry.kafka.BookNotificationEvent
+        # Session and heartbeat
+        session.timeout.ms: 30000
+        heartbeat.interval.ms: 10000
+        max.poll.interval.ms: ${KAFKA_MAX_POLL_INTERVAL_MS:300000}
+    producer: # This is the config for the retryable topic
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+    listener:
+      ack-mode: record  # Acknowledge after each record (compatible with @RetryableTopic)
+      concurrency: ${KAFKA_CONSUMER_CONCCURENCY:3}    # 3 parallel consumers
+
+kafka:
+  topic:
+    book-notification: ${KAFKA_TOPIC_BOOK_NOTIFICATION:book-notification-topic}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_SERVER_HOST:localhost}:${EUREKA_SERVER_PORT:8761}/eureka/
+    register-with-eureka: ${EUREKA_REGISTER:true}
+    fetch-registry: ${EUREKA_FETCH_REGISTRY:true}
+  instance:
+    prefer-ip-address: ${EUREKA_PREFER_IP:true}
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
+
+logging:
+  level:
+    com.health.spry: ${LOG_LEVEL:INFO}
+    org.springframework.kafka: ${LOG_LEVEL_KAFKA:WARN}
+    org.springframework.kafka.listener: ${LOG_LEVEL_KAFKA_LISTENER:INFO}
+    org.springframework.kafka.retrytopic: ${LOG_LEVEL_KAFKA_RETRY:INFO}  # Debug retry topic behavior
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always

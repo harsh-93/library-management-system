@@ -14,6 +14,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Min;
@@ -26,7 +27,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "books", uniqueConstraints = {
+@Table(name = "books",indexes = { // These indexes optimises the query 
+		@Index(name = "idx_book_deleted_author", columnList = "author,deleted"),
+		@Index(name = "idx_book_author_published_year_title_deleted", columnList = "author,published_year,title,deleted"), // This is for those queries where we search for author and published year in get 
+		@Index(name = "idx_book_published_year_deletd", columnList = "published_year,deleted"),
+		@Index(name = "idx_book_title_deleted", columnList = "title,deleted"),
+		@Index(name = "idx_book_deleted_author_publishedyear_title", columnList = "deleted,author,published_year,title"),
+}, uniqueConstraints = {
     @UniqueConstraint(columnNames = "isbn")
 })
 @Data

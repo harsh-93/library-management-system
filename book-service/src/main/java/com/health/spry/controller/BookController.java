@@ -68,7 +68,7 @@ public class BookController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all books", description = "Retrieve a paginated list of books with optional filters")
+    @Operation(summary = "Get all books", description = "Retrieve a paginated list of books with optional (id, title, author, published-year) filters")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Books retrieved successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = PagedResponse.class))),
@@ -132,11 +132,11 @@ public class BookController {
             @ApiResponse(responseCode = "401", description = "Unauthorized",
                     content = @Content)
     })
-    public ResponseEntity<Void> deleteBook(
+    public ResponseEntity<String> deleteBook(
             @Parameter(description = "Book ID", required = true) @PathVariable @Min(1) Long id) {
         log.info("Received request to delete book with ID: {}", id);
         bookService.deleteBook(id);
-        return ResponseEntity.noContent().build();
+        return new ResponseEntity<>("Book deleted successfully", HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/search")

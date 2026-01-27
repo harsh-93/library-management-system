@@ -1,41 +1,41 @@
 server:
-  port: 8083
+  port: ${SERVER_PORT:8083}
 
 spring:
   application:
-    name: book-service
+    name: ${SPRING_APPLICATION_NAME:book-service}
   datasource:
-    url: jdbc:mysql://localhost:3306/library_book_db?createDatabaseIfNotExist=true
-    username: root
-    password: my-secret-pw
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:library_book_db}?createDatabaseIfNotExist=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:my-secret-pw}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: ${JPA_SHOW_SQL:true}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
-        format_sql: true
+        format_sql: ${JPA_FORMAT_SQL:true}
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 kafka:
   topic:
-    book-notification: book-notification-topic
+    book-notification: ${KAFKA_TOPIC_BOOK_NOTIFICATION:book-notification-topic}
 
 # JWT Configuration (must match login-service secret)
 jwt:
-  secret: 5Nh9M4kL7pQ2rT8vW1xY3zA6bC0dE4fG9hJ2kL5nM8pQ1rS4tU7vX0yZ3aB6cD9e
-  expiration: 86400000  # 24 hours in milliseconds
+  secret: ${JWT_SECRET:MySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong12345}
+  expiration: ${JWT_EXPIRATION:86400000}  # 24 hours in milliseconds
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://${EUREKA_SERVER_HOST:localhost}:${EUREKA_SERVER_PORT:8761}/eureka/
     register-with-eureka: true
     fetch-registry: true
   instance:
@@ -43,4 +43,14 @@ eureka:
 
 logging:
   level:
-    com.health.prya.book: DEBUG
+    com.health.spry: ${LOG_LEVEL:DEBUG}
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always

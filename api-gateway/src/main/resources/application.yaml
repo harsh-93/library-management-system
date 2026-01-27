@@ -1,9 +1,9 @@
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 
 spring:
   application:
-    name: api-gateway
+    name: ${SPRING_APPLICATION_NAME:api-gateway}
   cloud:
     gateway:
       discovery:
@@ -16,19 +16,19 @@ spring:
           connect-timeout: 5000
           response-timeout: 5s
         locator:
-          enabled: true
-          lower-case-service-id: true
+          enabled: ${GATEWAY_DISCOVERY_ENABLED:true}
+          lower-case-service-id: ${GATEWAY_LOWERCASE_SERVICE_ID:true}
       routes:
         - id: signup-service
-          uri: lb://SIGNUP-SERVICE
+          uri: lb://${SIGNUP_SERVICE_NAME:signup-service}
           predicates:
             - Path=/api/signup/**
         - id: login-service
-          uri: lb://LOGIN-SERVICE
+          uri: lb://${LOGIN_SERVICE_NAME:login-service}
           predicates:
             - Path=/api/auth/**
         - id: book-service
-          uri: lb://BOOK-SERVICE
+          uri: lb://${BOOK_SERVICE_NAME:book-service}
           predicates:
             - Path=/api/books/**
 
@@ -36,7 +36,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://${EUREKA_SERVER_HOST:localhost}:${EUREKA_SERVER_PORT:8761}/eureka/
     register-with-eureka: true
     fetch-registry: true
   instance:
@@ -85,3 +85,12 @@ resilience4j:
         timeoutDuration: 5s
       defaultCircuitBreaker:
         timeoutDuration: 5s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always

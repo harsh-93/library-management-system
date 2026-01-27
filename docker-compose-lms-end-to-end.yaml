@@ -1,0 +1,299 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0.36
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - lms-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Zookeeper for Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: lms-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - lms-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Kafka
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: lms-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    ports:
+      - "9092:9092"
+    networks:
+      - lms-network
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # Service Discovery (Eureka Server)
+  service-discovery:
+    build:
+      context: ./service-discovery
+      dockerfile: Dockerfile
+    container_name: lms-service-discovery
+    environment:
+      SERVER_PORT: 8761
+      SPRING_APPLICATION_NAME: service-discovery
+      EUREKA_INSTANCE_HOSTNAME: service-discovery
+      EUREKA_SERVER_HOST: service-discovery
+      EUREKA_SERVER_PORT: 8761
+      EUREKA_SELF_PRESERVATION: 'false'
+    ports:
+      - "8761:8761"
+    networks:
+      - lms-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8761/actuator/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: lms-api-gateway
+    depends_on:
+      service-discovery:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      SPRING_APPLICATION_NAME: api-gateway
+      EUREKA_SERVER_HOST: service-discovery
+      EUREKA_SERVER_PORT: 8761
+      EUREKA_INSTANCE_HOSTNAME: api-gateway
+      EUREKA_REGISTER: 'true'
+      EUREKA_FETCH_REGISTRY: 'true'
+      EUREKA_PREFER_IP: 'false'
+      SIGNUP_SERVICE_NAME: signup-service
+      LOGIN_SERVICE_NAME: login-service
+      BOOK_SERVICE_NAME: book-service
+      GATEWAY_DISCOVERY_ENABLED: 'true'
+      GATEWAY_LOWERCASE_SERVICE_ID: 'true'
+    ports:
+      - "8080:8080"
+    networks:
+      - lms-network
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+
+  # Signup Service
+  signup-service:
+    build:
+      context: ./signup-service
+      dockerfile: Dockerfile
+    container_name: lms-signup-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-discovery:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8081
+      SPRING_APPLICATION_NAME: signup-service
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: library_signup_db
+      DB_USERNAME: root
+      DB_PASSWORD: my-secret-pw
+      JPA_DDL_AUTO: update
+      JPA_SHOW_SQL: 'true'
+      JPA_FORMAT_SQL: 'true'
+      EUREKA_SERVER_HOST: service-discovery
+      EUREKA_SERVER_PORT: 8761
+      EUREKA_INSTANCE_HOSTNAME: signup-service
+      EUREKA_REGISTER: 'true'
+      EUREKA_FETCH_REGISTRY: 'true'
+      EUREKA_PREFER_IP: 'false'
+      LOG_LEVEL: INFO
+    ports:
+      - "8081:8081"
+    networks:
+      - lms-network
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8081/actuator/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+
+  # Login Service
+  login-service:
+    build:
+      context: ./login-service
+      dockerfile: Dockerfile
+    container_name: lms-login-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-discovery:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8082
+      SPRING_APPLICATION_NAME: login-service
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: library_signup_db
+      DB_USERNAME: root
+      DB_PASSWORD: my-secret-pw
+      JPA_DDL_AUTO: update
+      JPA_SHOW_SQL: 'true'
+      JPA_FORMAT_SQL: 'true'
+      JWT_SECRET: MySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong12345
+      JWT_EXPIRATION: 86400000
+      EUREKA_SERVER_HOST: service-discovery
+      EUREKA_SERVER_PORT: 8761
+      EUREKA_INSTANCE_HOSTNAME: login-service
+      EUREKA_REGISTER: 'true'
+      EUREKA_FETCH_REGISTRY: 'true'
+      EUREKA_PREFER_IP: 'false'
+      LOG_LEVEL: INFO
+    ports:
+      - "8082:8082"
+    networks:
+      - lms-network
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8082/actuator/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+
+  # Book Service
+  book-service:
+    build:
+      context: ./book-service
+      dockerfile: Dockerfile
+    container_name: lms-book-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      service-discovery:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8083
+      SPRING_APPLICATION_NAME: book-service
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: library_book_db
+      DB_USERNAME: root
+      DB_PASSWORD: my-secret-pw
+      JPA_DDL_AUTO: update
+      JPA_SHOW_SQL: 'true'
+      JPA_FORMAT_SQL: 'true'
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC_BOOK_NOTIFICATION: book-notification-topic
+      JWT_SECRET: MySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong12345
+      JWT_EXPIRATION: 86400000
+      EUREKA_SERVER_HOST: service-discovery
+      EUREKA_SERVER_PORT: 8761
+      EUREKA_INSTANCE_HOSTNAME: book-service
+      EUREKA_REGISTER: 'true'
+      EUREKA_FETCH_REGISTRY: 'true'
+      EUREKA_PREFER_IP: 'false'
+      LOG_LEVEL: INFO
+    ports:
+      - "8083:8083"
+    networks:
+      - lms-network
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8083/actuator/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+
+
+  # Notification Service
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: lms-notification-service
+    depends_on:
+      kafka:
+        condition: service_healthy
+      service-discovery:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+      login-service:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8084
+      SPRING_APPLICATION_NAME: notification-service
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_CONSUMER_GROUP_ID: notification-group
+      KAFKA_AUTO_OFFSET_RESET: earliest
+      KAFKA_TOPIC_BOOK_NOTIFICATION: book-notification-topic
+      EUREKA_SERVER_HOST: service-discovery
+      EUREKA_SERVER_PORT: 8761
+      EUREKA_INSTANCE_HOSTNAME: notification-service
+      EUREKA_REGISTER: 'true'
+      EUREKA_FETCH_REGISTRY: 'true'
+      EUREKA_PREFER_IP: 'false'
+      LOG_LEVEL: INFO
+    ports:
+      - "8084:8084"
+    networks:
+      - lms-network
+    restart: on-failure
+
+networks:
+  lms-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+

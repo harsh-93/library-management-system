@@ -28,7 +28,7 @@ spring:
         spring.json.add.type.headers: false
     listener:
       ack-mode: record  # Acknowledge after each record (compatible with @RetryableTopic)
-      concurrency: 3    # 3 parallel consumers
+      concurrency: ${KAFKA_CONSUMER_CONCCURENCY:3}    # 3 parallel consumers
 
 kafka:
   topic:
@@ -46,8 +46,16 @@ eureka:
 
 logging:
   level:
-    com.health.prya.notification: ${LOG_LEVEL:INFO}
+    com.health.spry: ${LOG_LEVEL:INFO}
     org.springframework.kafka: ${LOG_LEVEL_KAFKA:WARN}
     org.springframework.kafka.listener: ${LOG_LEVEL_KAFKA_LISTENER:INFO}
-    org.springframework.kafka.retrytopic: DEBUG  # Debug retry topic behavior
-  
+    org.springframework.kafka.retrytopic: ${LOG_LEVEL_KAFKA_RETRY:INFO}  # Debug retry topic behavior
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always

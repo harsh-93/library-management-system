@@ -1,27 +1,27 @@
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
 
 spring:
   application:
-    name: signup-service
+    name: ${SPRING_APPLICATION_NAME:signup-service}
   datasource:
-    url: jdbc:mysql://localhost:3306/library_signup_db?createDatabaseIfNotExist=true
-    username: root
-    password: my-secret-pw
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:library_signup_db}?createDatabaseIfNotExist=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:my-secret-pw}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: ${JPA_SHOW_SQL:true}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
-        format_sql: true
+        format_sql: ${JPA_FORMAT_SQL:true}
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://${EUREKA_SERVER_HOST:localhost}:${EUREKA_SERVER_PORT:8761}/eureka/
     register-with-eureka: true
     fetch-registry: true
   instance:
@@ -29,4 +29,13 @@ eureka:
 
 logging:
   level:
-    com.health.prya.signup: DEBUG
+    com.health.spry: ${LOG_LEVEL:DEBUG}
+
+management:
+  endpoints:
+   web:
+     exposure:
+       include: health
+  endpoint:
+   health:
+    show-details: always				

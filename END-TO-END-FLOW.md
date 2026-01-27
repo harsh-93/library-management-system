@@ -14,7 +14,8 @@ This guide provides a complete walkthrough of the Library Management System, fro
 4. [Complete API Workflow Script](#complete-api-workflow-script)
 5. [Data Flow Diagrams](#data-flow-diagrams)
 6. [Testing Scenarios](#testing-scenarios)
-7. [CORE FEATURES AND IMPROVEMENTS](#core-features-and-improvements)
+7. [Error Handling](#error-handling)   
+8. [CORE FEATURES AND IMPROVEMENTS](#core-features-and-improvements)
 
 ---
 
@@ -870,6 +871,9 @@ Attempt 4: book-notification-topic-retry-2 → FAIL
    - Test retry mechanism
 
 ---
+## Error Handling
+This will help you see how are exception or error api cases handles in this application
+See -> [Error Handling doc](md-Docs/ERROR-HANDLING.md)
 
 ---
 

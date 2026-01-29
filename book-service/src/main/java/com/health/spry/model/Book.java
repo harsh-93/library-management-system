@@ -27,13 +27,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "books",indexes = { // These indexes optimises the query 
-		@Index(name = "idx_book_deleted_author", columnList = "author,deleted"),
-		@Index(name = "idx_book_author_published_year_title_deleted", columnList = "author,published_year,title,deleted"), // This is for those queries where we search for author and published year in get 
-		@Index(name = "idx_book_published_year_deletd", columnList = "published_year,deleted"),
-		@Index(name = "idx_book_title_deleted", columnList = "title,deleted"),
-		@Index(name = "idx_book_deleted_author_publishedyear_title", columnList = "deleted,author,published_year,title"),
-}, uniqueConstraints = {
+@Table(name = "books",indexes = {
+	    @Index(name = "idx_books_deleted_status", columnList = "deleted,availability_status"),
+	    @Index(name = "idx_books_deleted_author", columnList = "deleted,author"),
+	    @Index(name = "idx_books_deleted_year", columnList = "deleted,published_year"),
+	    @Index(name = "idx_books_deleted_title", columnList = "deleted,title")
+	}, uniqueConstraints = {
     @UniqueConstraint(columnNames = "isbn")
 })
 @Data

@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "wishlists",indexes = { // These indexes optimises the query
-		@Index(name = "idx_userid_bookid", columnList = "user_id,book_id")
+		  @Index(name = "idx_wishlists_book_id", columnList = "book_id")
 }, uniqueConstraints = {
     @UniqueConstraint(columnNames = {"user_id", "book_id"})  
 })
